@@ -11,12 +11,10 @@
 
 ## reference: https://www.backtrader.com/docu/quickstart/quickstart/
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-
 import datetime  # For datetime objects
 import os.path  # To manage paths
 import sys
+import matplotlib.pyplot as plt
 
 # Import the backtrader platform
 import backtrader as bt
@@ -88,7 +86,7 @@ class TestStrategy(bt.Strategy):
         else:
 
             # Already in the market ... we might sell
-            if len(self) >= (self.bar_executed + 3) and self.dataclose[0] > self.dataclose[-1]:
+            if self.dataclose[0] > (self.dataclose[-1] + self.dataclose[-2] + self.dataclose[-3])/3: # fix the selling stategy
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
@@ -137,7 +135,9 @@ cerebro.run()
 print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
 # Plot the result
-cerebro.plot()
+plt.rcParams['figure.figsize'] = [13.8, 10]
+fig = cerebro.plot(style='candlestick', barup='green', bardown='red')
+fig[0][0].savefig("plot_yahoo-2014_fixed.png", bbox_inches="tight") # fix the plot
 
 # save the redirected print output to the file
 sys.stdout.close()
