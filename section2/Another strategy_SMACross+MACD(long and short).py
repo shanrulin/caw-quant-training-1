@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[10]:
+# In[1]:
 
 
 # all built-in libraries at the top
@@ -23,17 +23,15 @@ to_datetime = '2020-04-01 00:00:00' # end time
 
 # Create a subclass of Strategy to define the indicators and logic
 
-class SMA_MACD_longshort(bt.Strategy):
+class SMA_MACD(bt.Strategy):
     '''Use SMA Crossover and MACD to decide when to enter or leave a market.
        Consider self.macd > 0 as a bull market signal.
-       Also, allow to make a long and short position.
 
        This strategy is better than SMA Crossover strategy(baseline),
        because it recognizes a bull/bear market signal.
-       A greater opportunity to earn money from a long position in a bull market, and
-       earn money from a short position in a bear market.
+       A greater opportunity to earn money from a long position in a bull market.
 
-       The end value for this stategy at the last trading hour is 13888.92,
+       The end value for this stategy at the last trading hour is 10176.46,
        which is higher than that of SMA Crossover strategy(9991.39).'''
 
     # list of parameters which are configurable for the strategy
@@ -47,21 +45,16 @@ class SMA_MACD_longshort(bt.Strategy):
         sma2 = bt.ind.SMA(period=self.p.pslow)  # slow moving average
         self.crossover = bt.ind.CrossOver(sma1, sma2)  # crossover signal
         self.MACD=bt.ind.MACD()
-        self.macd=self.MACD.macd  # bull/bear market signal
+        self.macd=self.MACD.macd  # bull market signal
         self.signal=self.MACD.signal
 
     def next(self):
         if not self.position.size:  # not in the market
             if self.crossover > 0 and self.macd > 0:  # if fast crosses slow to the upside
                 self.buy()  # enter long
-            elif self.crossover < 0 and self.macd < 0:
-                self.sell() # enter short
 
         elif self.crossover < 0 and self.macd < 0:  # in the market & cross to the downside
             self.close()  # close long position
-        elif self.crossover > 0 and self.macd > 0:
-            self.close()  # close Short position
-
 
 cerebro = bt.Cerebro()  # create a "Cerebro" engine instance
 
@@ -75,7 +68,7 @@ datafeed = bt.feeds.PandasData(dataname=data)
 
 cerebro.adddata(datafeed) # Add the data feed
 
-cerebro.addstrategy(SMA_MACD_longshort)  # Add the trading strategy
+cerebro.addstrategy(SMA_MACD)  # Add the trading strategy
 
 # additional backtest setting
 cerebro.addsizer(bt.sizers.PercentSizer, percents=99)
