@@ -122,6 +122,9 @@ cerebro.adddata(data)
 # Set our desired cash start
 cerebro.broker.setcash(100000.0)
 
+# add sizer
+cerebro.addsizer(bt.sizers.PercentSizer, percents=99) ## adjust position sizing, so that cash will not be negative
+
 # keep print(log) to file
 sys.stdout = open("log/yahoo_log.txt", "w")
 
