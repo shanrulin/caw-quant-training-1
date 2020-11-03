@@ -7,7 +7,7 @@
 ### Task3 Optimize Parameter in Strategy
 
 
-# In[26]:
+# In[1]:
 
 
 # all built-in libraries 
@@ -51,7 +51,7 @@ class SMACross(bt.Strategy):
         self.crossover = bt.ind.CrossOver(sma1, sma2)  # crossover signal
         
         # skip unwanted pairs
-        if self.p.pfast > self.p.pslow:
+        if self.p.pfast >= self.p.pslow:
             raise bt.StrategySkipError
         
     def next(self):
@@ -97,19 +97,19 @@ cerebro.addsizer(bt.sizers.PercentSizer, percents=99)
 cerebro.broker.set_cash(10000)
 cerebro.broker.setcommission(commission=0.001)
 
-results=cerebro.run(maxcpus=1)  # run it all
+results=cerebro.run()  # run it all
 
 
-# In[27]:
+# In[2]:
 
 
 #print(len(results)) # StrategySkipError skip the unwanted pairs, but cerebro still save a space for it
 
 
-# In[28]:
+# In[3]:
 
 
-## get strategy name
+## get strategy namev
 strategy_name = results[0][0].strategycls.__name__
 
 ## build an empty dataframe
@@ -154,13 +154,13 @@ for i in range(len(results)):
     df.loc[i] = [strategy_name, sma_pfast, sma_pslow, Return, MaxDrawDown, TotalTrades,                win_t, lost_t, win_ratio, avg_win, avg_lost, avg_winlost]
 
 
-# In[29]:
+# In[4]:
 
 
 df.reset_index(drop=True, inplace=True)
 
 
-# In[31]:
+# In[5]:
 
 
 ## Compute rank of 4 KPIs
@@ -178,7 +178,7 @@ df['RankAverageWinLossRatio'] =df['AverageWinLossRatio'].rank(ascending=False)
 df['Score'] = df[['RankReturn', 'RankMaxDrawDown', 'RankWinRatio', 'RankAverageWinLossRatio']].mean(axis=1)
 
 
-# In[33]:
+# In[6]:
 
 
 ## get the index of the winner, which is the smallest score
@@ -187,9 +187,15 @@ df['Score'].idxmin()
 # conclusion: the winner has pfast 16 and pslow 25
 
 
-# In[35]:
+# In[7]:
 
 
 ## save dataframe to csv
 df.to_csv ('BTC_USDT_1h_SMACross.csv', index = True, header=True)
+
+
+# In[ ]:
+
+
+
 
