@@ -50,6 +50,10 @@ class SMACross(bt.Strategy):
         sma2 = bt.ind.SMA(period=self.p.pslow)  # slow moving average
         self.crossover = bt.ind.CrossOver(sma1, sma2)  # crossover signal
         
+        # skip unwanted pairs
+        if self.p.pfast >= self.p.pslow:
+            raise bt.StrategySkipError
+        
     def next(self):
         if not self.position.size:  # not in the market
             if self.crossover > 0:  # if fast crosses slow to the upside
@@ -93,19 +97,19 @@ cerebro.addsizer(bt.sizers.PercentSizer, percents=99)
 cerebro.broker.set_cash(10000)
 cerebro.broker.setcommission(commission=0.001)
 
-results=cerebro.run(maxcpus=1)  # run it all
+results=cerebro.run()  # run it all
 
 
 # In[2]:
 
 
-#print(len(results))
+#print(len(results)) # StrategySkipError skip the unwanted pairs, but cerebro still save a space for it
 
 
-# In[20]:
+# In[3]:
 
 
-## get strategy name
+## get strategy namev
 strategy_name = results[0][0].strategycls.__name__
 
 ## build an empty dataframe
@@ -115,6 +119,11 @@ df = pd.DataFrame(columns =
 
 ## store KPI in the dataframe
 for i in range(len(results)):
+    
+    ## skip empty result
+    if len(results[i]) == 0:
+        continue
+    
     ## get all required KPI
     sma_pfast = results[i][0].p.pfast
     sma_pslow = results[i][0].p.pslow
@@ -145,7 +154,13 @@ for i in range(len(results)):
     df.loc[i] = [strategy_name, sma_pfast, sma_pslow, Return, MaxDrawDown, TotalTrades,                win_t, lost_t, win_ratio, avg_win, avg_lost, avg_winlost]
 
 
-# In[25]:
+# In[4]:
+
+
+df.reset_index(drop=True, inplace=True)
+
+
+# In[5]:
 
 
 ## Compute rank of 4 KPIs
@@ -163,7 +178,7 @@ df['RankAverageWinLossRatio'] =df['AverageWinLossRatio'].rank(ascending=False)
 df['Score'] = df[['RankReturn', 'RankMaxDrawDown', 'RankWinRatio', 'RankAverageWinLossRatio']].mean(axis=1)
 
 
-# In[28]:
+# In[6]:
 
 
 ## get the index of the winner, which is the smallest score
@@ -172,9 +187,15 @@ df['Score'].idxmin()
 # conclusion: the winner has pfast 16 and pslow 25
 
 
-# In[30]:
+# In[7]:
 
 
 ## save dataframe to csv
 df.to_csv ('BTC_USDT_1h_SMACross.csv', index = True, header=True)
+
+
+# In[ ]:
+
+
+
 
